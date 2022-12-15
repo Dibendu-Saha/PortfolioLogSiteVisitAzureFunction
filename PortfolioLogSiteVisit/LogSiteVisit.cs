@@ -19,18 +19,14 @@ namespace PortfolioLogSiteVisit
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            string email = req.Query["email"];
             string pw = Environment.GetEnvironmentVariable("App_Pw");
-            
             string message = "Someone just visited your profile.";
-
             string emailFrom = Environment.GetEnvironmentVariable("Email_From");
             string emailTo = Environment.GetEnvironmentVariable("Email_To");
 
             // Send email
             MailMessage emailMessage = new MailMessage();
             SmtpClient smtpClient = new SmtpClient();
-
             emailMessage.From = new MailAddress(emailFrom);
             emailMessage.To.Add(new MailAddress(emailTo));
             //emailMessage.IsBodyHtml = true;
