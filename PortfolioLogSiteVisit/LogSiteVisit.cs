@@ -19,8 +19,15 @@ namespace PortfolioLogSiteVisit
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
+            string page = req.Query["page"].ToString();
             string pw = Environment.GetEnvironmentVariable("App_Pw");
-            string message = "Someone just visited your profile.";
+
+            string message =
+                page == "Download CV"
+                    ? "Someone just downloaded your CV."
+                    : $"<p>Someone just visited your website.</p>"
+                         + $"Website section: <strong>{page}</strong>";
+
             string emailFrom = Environment.GetEnvironmentVariable("Email_From");
             string emailTo = Environment.GetEnvironmentVariable("Email_To");
 
@@ -29,10 +36,14 @@ namespace PortfolioLogSiteVisit
             SmtpClient smtpClient = new SmtpClient();
             emailMessage.From = new MailAddress(emailFrom);
             emailMessage.To.Add(new MailAddress(emailTo));
-            //emailMessage.IsBodyHtml = true;
+            emailMessage.IsBodyHtml = true;
             emailMessage.Body = message.ToString();
 
-            emailMessage.Subject = "Site Visit Notification - Dibendu Saha";
+            emailMessage.Subject =
+                page == "Download CV"
+                    ? "CV Download Notification - Dibendu Saha"
+                    : $"Site Visit Notification - Dibendu Saha ({page})";
+
             smtpClient.Port = 587;
             smtpClient.Host = "smtp.gmail.com";
             smtpClient.EnableSsl = true;
