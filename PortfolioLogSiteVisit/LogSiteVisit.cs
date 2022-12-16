@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Net.Mail;
 using System.Net;
+using PortfolioLogSiteVisit.Models;
+using System.Text;
 
 namespace PortfolioLogSiteVisit
 {
@@ -20,13 +22,35 @@ namespace PortfolioLogSiteVisit
             log.LogInformation("C# HTTP trigger function processed a request.");
 
             string page = req.Query["page"].ToString();
+            string loc_data_raw = req.Query["loc_data"].ToString();
+            LocationData locData = JsonConvert.DeserializeObject<LocationData>(loc_data_raw);
+
             string pw = Environment.GetEnvironmentVariable("App_Pw");
 
-            string message =
+            string tblLocationDetails
+                = "<hr><div>"
+                + "<p>Location details:</p>"
+                + "<table border=\"1\">"
+                + $"<tr> <td><strong>Country Code</strong></td> <td>{locData.Country_Code}</td> </tr>"
+                + $"<tr> <td><strong>Country</strong></td> <td>{locData.Country_Name}</td> </tr>"
+                + $"<tr> <td><strong>State</strong></td> <td>{locData.State}</td> </tr>"
+                + $"<tr> <td><strong>City</strong></td> <td>{locData.City}</td> </tr>"
+                + $"<tr> <td><strong>Postal</strong></td> <td>{locData.Postal}</td> </tr>"
+                + $"<tr> <td><strong>Latitude</strong></td> <td>{locData.Latitude}</td> </tr>"
+                + $"<tr> <td><strong>Longitude</strong></td> <td>{locData.Longitude}</td> </tr>"
+                + $"<tr> <td><strong>IPv4</strong></td> <td>{locData.IPv4}</td> </tr>"
+                + "</table></div><hr>";
+
+            StringBuilder message = new StringBuilder();
+            message.Append(
                 page == "Download CV"
-                    ? "Someone just downloaded your CV."
+                    ? "<p>Someone just downloaded your CV.</p>"
                     : $"<p>Someone just visited your website.</p>"
-                         + $"Website section: <strong>{page}</strong>";
+                         + $"<p>Website section: <strong>{page}</strong></p>"
+                );
+
+
+            message.Append(tblLocationDetails);
 
             string emailFrom = Environment.GetEnvironmentVariable("Email_From");
             string emailTo = Environment.GetEnvironmentVariable("Email_To");
