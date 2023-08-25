@@ -1,10 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Net.Mail;
@@ -16,14 +14,15 @@ namespace PortfolioLogSiteVisit
 {
     public static class LogSiteVisit
     {
-        [FunctionName("LogSiteVisit")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req, ILogger log)
+        [Function("LogSiteVisit")]
+        public static async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequestData req, FunctionContext ctx)
         {
             try
             {
+                var log = ctx.GetLogger(nameof(ILogger));
                 log.LogInformation("C# HTTP trigger function processed a request.");
 
-                string page = req.Query["page"].ToString();
+                string page = req.Url.Query.Split("=")[1].ToString();
                 string loc_data_raw = await new StreamReader(req.Body).ReadToEndAsync();
                 var locData = JsonConvert.DeserializeObject<LocationData>(loc_data_raw);
 
@@ -46,8 +45,8 @@ namespace PortfolioLogSiteVisit
                 smtpClient.Credentials = new NetworkCredential(emailTo, pw);
 
                 smtpClient.Send(emailMessage);
-
-                return new OkResult();
+                
+                return req.CreateResponse(HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
